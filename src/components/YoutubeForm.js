@@ -1,8 +1,9 @@
 import React from "react";
 import { useFormik } from "formik";
+import * as Yup from "yup";
 
 const initialValues = {
-  name: "",
+  name: "Karthik",
   email: "",
   channel: ""
 };
@@ -35,11 +36,18 @@ const validate = (values) => {
   return errors;
 };
 
+const validationSchema = Yup.object({
+  name: Yup.string().required("Required!"),
+  email: Yup.string().email("Invalid email format").required("Required!"),
+  channel: Yup.string().required("Required!")
+});
+
 function YoutubeForm() {
   const formik = useFormik({
     initialValues,
     onSubmit,
-    validate
+    validationSchema
+    // validate
   });
 
   console.log("Form Values", formik.values);
@@ -59,7 +67,7 @@ function YoutubeForm() {
             value={formik.values.name}
           />
           {formik.touched.name && formik.errors.name ? (
-            <div className="error">{`*${formik.errors.name}`}</div>
+            <div className="error">{formik.errors.name}</div>
           ) : null}
         </div>
         <div className="form-control">
@@ -73,7 +81,7 @@ function YoutubeForm() {
             value={formik.values.email}
           />
           {formik.touched.email && formik.errors.email ? (
-            <div className="error">{`*${formik.errors.email}`}</div>
+            <div className="error">{formik.errors.email}</div>
           ) : null}
         </div>
         <div className="form-control">
@@ -87,7 +95,7 @@ function YoutubeForm() {
             onBlur={formik.handleBlur}
           />
           {formik.touched.channel && formik.errors.channel ? (
-            <div className="error">{`*${formik.errors.channel}`}</div>
+            <div className="error">{formik.errors.channel}</div>
           ) : null}
         </div>
         <button type="submit">Submit</button>
