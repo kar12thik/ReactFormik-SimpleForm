@@ -1,48 +1,45 @@
 import React from "react";
-import { Formik, Form, Field, ErrorMessage } from "formik";
+import {
+  Formik,
+  Form,
+  Field,
+  ErrorMessage,
+  FieldArray,
+  FastField
+} from "formik";
 import * as Yup from "yup";
+import TextError from "./TextError";
 
 const initialValues = {
   name: "Karthik",
   email: "",
   channel: "",
   comments: "",
-  address: ""
+  address: "",
+  social: {
+    facebook: "",
+    twitter: ""
+  },
+  phoneNumbers: ["", ""],
+  phNumbers: [""]
 };
 
 const onSubmit = (values) => {
   console.log("Form Data", values);
 };
 
-function validateEmail(email) {
-  const re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-  return re.test(email);
-}
-
-const validate = (values) => {
-  // values.name values.email values.channel
-  // errors.name errors.email errors.channel
-  //errors.name = 'This field is required'
-  let errors = {};
-  if (!values.name) {
-    errors.name = "Required";
+const validateComments = (value) => {
+  let error;
+  if (!value) {
+    error = "Required";
   }
-  if (!values.email) {
-    errors.email = "Required";
-  } else if (!validateEmail(values.email)) {
-    errors.email = "Invalid Email Format";
-  }
-  if (!values.channel) {
-    errors.channel = "Required";
-  }
-  return errors;
+  return error;
 };
 
 const validationSchema = Yup.object({
   name: Yup.string().required("Required!"),
   email: Yup.string().email("Invalid email format").required("Required!"),
   channel: Yup.string().required("Required!"),
-  comments: Yup.string().required("Required"),
   address: Yup.string().required("Required")
 });
 
@@ -52,33 +49,44 @@ function YoutubeForm() {
       initialValues={initialValues}
       validationSchema={validationSchema}
       onSubmit={onSubmit}
+      validateOnBlur={false}
+      validateOnChange={false}
     >
       <Form>
         <div className="form-control">
           <label htmlFor="name">Name</label>
           <Field type="text" id="name" name="name" />
-          <ErrorMessage name="name" />
+          <ErrorMessage name="name" component={TextError} />
         </div>
         <div className="form-control">
           <label htmlFor="email">Email</label>
           <Field type="email" id="email" name="email" />
-          <ErrorMessage name="email" />
+          <ErrorMessage name="email">
+            {(errorMsg) => {
+              return <div className="error">{errorMsg}</div>;
+            }}
+          </ErrorMessage>
         </div>
         <div className="form-control">
           <label htmlFor="channel">Channel</label>
           <Field type="text" id="channel" name="channel" />
-          <ErrorMessage name="channel" />
+          <ErrorMessage name="channel" component={TextError} />
         </div>
         <div className="form-control">
           <label htmlFor="comments">Comments</label>
-          <Field as="textarea" id="comments" name="comments" />
-          <ErrorMessage name="comments" />
+          <Field
+            as="textarea"
+            id="comments"
+            name="comments"
+            validate={validateComments}
+          />
+          <ErrorMessage name="comments" component={TextError} />
         </div>
         <div className="form-control">
           <label htmlFor="address">Address</label>
-          <Field name="address">
+          <FastField name="address">
             {(props) => {
-              console.log(props);
+              console.log("FastField Render");
               const { field, form, meta } = props;
               return (
                 <div>
@@ -87,7 +95,53 @@ function YoutubeForm() {
                 </div>
               );
             }}
-          </Field>
+          </FastField>
+        </div>
+        <div className="form-control">
+          <label htmlFor="primaryPh">Primary Phone Number</label>
+          <Field type="text" id="primaryPh" name="phoneNumbers[0]" />
+        </div>
+        <div className="form-control">
+          <label htmlFor="secondaryPh">Secondary Phone Number</label>
+          <Field type="text" id="secondaryPh" name="phoneNumbers[1]" />
+        </div>
+        <div className="form-control">
+          <label htmlFor="">List of Phone Numbers</label>
+          <FieldArray name="phNumbers">
+            {(fieldArrayProps) => {
+              console.log("Field Array Props", fieldArrayProps);
+              const { push, remove, form } = fieldArrayProps;
+              const { values } = form;
+              const { phNumbers } = values;
+              return (
+                <div>
+                  {phNumbers.map((phNumber, index) => (
+                    <div key={index}>
+                      <Field name={`phNumbers[${index}]`} />
+                      {index > 0 && (
+                        <button type="button" onClick={() => remove(index)}>
+                          {" "}
+                          -{" "}
+                        </button>
+                      )}
+                      <button type="button" onClick={() => push("")}>
+                        {" "}
+                        +{" "}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              );
+            }}
+          </FieldArray>
+        </div>
+        <div className="form-control">
+          <label htmlFor="facebook">Facebook Profile</label>
+          <Field type="text" id="facebook" name="social.facebook" />
+        </div>
+        <div className="form-control">
+          <label htmlFor="twitter">Twitter Profile</label>
+          <Field type="text" id="twitter" name="social.twitter" />
         </div>
         <button type="submit">Submit</button>
       </Form>
